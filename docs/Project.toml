@@ -1,4 +1,5 @@
 [deps]
-EpiEvents = "c8e4d7ef-117e-4f16-a674-8399d7a06a5b"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+EpiEvents = "c8e4d7ef-117e-4f16-a674-8399d7a06a5b"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
