@@ -20,6 +20,8 @@ makedocs(;
     checkdocs = :exports,
     pages = [
         "Home" => "index.md",
+        "Usage Guide" => "guide.md",
+        "SIR Example" => "sir_example.md",
         "Index" => "pkg_index.md",
         "Function Reference" => "reference.md"
     ]

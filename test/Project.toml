@@ -1,0 +1,4 @@
+[deps]
+DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
+EpiEvents = "c8e4d7ef-117e-4f16-a674-8399d7a06a5b"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
