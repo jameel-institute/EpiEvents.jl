@@ -1,7 +1,7 @@
 name = "EpiEvents"
 uuid = "c8e4d7ef-117e-4f16-a674-8399d7a06a5b"
 authors = ["Pratik Gupte <pratikgupte16@gmail.com> and contributors"]
-version = "0.0.1"
+version = "0.0.2"
 
 [deps]
 DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
