@@ -12,11 +12,12 @@ A parameter modification effect that changes an ODE parameter based on trigger c
 - `ison::Bool`: Current state (mutable) tracking whether the effect is active
 - `time_on::Vector{Float64}`: Mutable vector of activation timestamps (append-only history)
 - `time_off::Vector{Float64}`: Mutable vector of deactivation timestamps (append-only history)
+- `id::Union{String, Nothing}`: Optional identifier for the effect (useful for reporting and analysis)
 
 # Constructor
 ```julia
 ParamEffect(target::Symbol, func::Function, reset_func::Function,
-            trigger_on::Trigger, trigger_off::Trigger)
+            trigger_on::Trigger, trigger_off::Trigger; id::Union{String, Nothing}=nothing)
 ```
 
 # Examples
@@ -58,9 +59,10 @@ mutable struct ParamEffect
     ison::Bool
     time_on::Vector{Float64}
     time_off::Vector{Float64}
+    id::Union{String, Nothing}
 
     function ParamEffect(target::Symbol, func::Function, reset_func::Function,
-            trigger_on::Trigger, trigger_off::Trigger)
+            trigger_on::Trigger, trigger_off::Trigger, id::Union{String, Nothing}=nothing)
         # Check if func and reset_func are inverses of each other
         test_value = 1.0
         transformed = func(test_value)
@@ -73,6 +75,6 @@ mutable struct ParamEffect
         end
 
         return new(
-            target, func, reset_func, trigger_on, trigger_off, false, Float64[], Float64[])
+            target, func, reset_func, trigger_on, trigger_off, false, Float64[], Float64[], id)
     end
 end
