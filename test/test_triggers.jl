@@ -45,3 +45,20 @@ end
     tt_day365 = TimeTrigger(365.0)
     @test tt_day365.value == 365.0
 end
+
+@testset "DurationTrigger" begin
+    # Test basic construction with positive value
+    dt = DurationTrigger(30.0)
+    @test dt.value == 30.0
+
+    # Test with different duration values
+    dt_short = DurationTrigger(1.0)
+    @test dt_short.value == 1.0
+
+    dt_long = DurationTrigger(365.0)
+    @test dt_long.value == 365.0
+
+    # Test that non-positive values raise error
+    @test_throws AssertionError DurationTrigger(0.0)
+    @test_throws AssertionError DurationTrigger(-5.0)
+end

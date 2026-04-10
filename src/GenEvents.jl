@@ -63,6 +63,7 @@ function make_reactive_on_callback(eff::ParamEffect)
     function affect!(integrator)
         if !eff.ison
             eff.ison = true
+            push!(eff.time_on, integrator.t)
             original = _get_param(integrator.p, eff.target)
             new_val = eff.func(original)
             _set_param!(integrator.p, eff.target, new_val)
@@ -96,6 +97,7 @@ function make_reactive_off_callback(eff::ParamEffect)
     function affect!(integrator)
         if eff.ison
             eff.ison = false
+            push!(eff.time_off, integrator.t)
             current = _get_param(integrator.p, eff.target)
             reset_val = eff.reset_func(current)
             _set_param!(integrator.p, eff.target, reset_val)
@@ -119,6 +121,7 @@ function make_timed_on_callback(eff::ParamEffect)
     function affect!(integrator)
         if !eff.ison
             eff.ison = true
+            push!(eff.time_on, integrator.t)
             original = _get_param(integrator.p, eff.target)
             new_val = eff.func(original)
             _set_param!(integrator.p, eff.target, new_val)
@@ -142,6 +145,7 @@ function make_timed_off_callback(eff::ParamEffect)
     function affect!(integrator)
         if eff.ison
             eff.ison = false
+            push!(eff.time_off, integrator.t)
             current = _get_param(integrator.p, eff.target)
             reset_val = eff.reset_func(current)
             _set_param!(integrator.p, eff.target, reset_val)
@@ -149,6 +153,37 @@ function make_timed_off_callback(eff::ParamEffect)
     end
 
     return PresetTimeCallback([trigger.value], affect!)
+end
+
+"""
+    make_duration_off_callback(eff::ParamEffect)::ContinuousCallback
+
+Create a continuous callback that deactivates when the effect has been on for
+`trigger_off.value` time units (measured from `last(eff.time_on)`).
+
+Condition is large-negative while inactive (time_on empty), so it cannot
+fire before the effect has been activated.
+"""
+function make_duration_off_callback(eff::ParamEffect)
+    trigger = eff.trigger_off
+    @assert isa(trigger, DurationTrigger) "trigger_off must be DurationTrigger for duration callback"
+
+    function condition(u, t, integrator)
+        isempty(eff.time_on) && return -trigger.value
+        return t - last(eff.time_on) - trigger.value
+    end
+
+    function affect!(integrator)
+        if eff.ison
+            eff.ison = false
+            push!(eff.time_off, integrator.t)
+            current = _get_param(integrator.p, eff.target)
+            reset_val = eff.reset_func(current)
+            _set_param!(integrator.p, eff.target, reset_val)
+        end
+    end
+
+    return ContinuousCallback(condition, affect!)
 end
 
 """
@@ -196,6 +231,8 @@ function make_callbacks(npi::Npi)::CallbackSet
             push!(callbacks, make_reactive_off_callback(eff))
         elseif isa(eff.trigger_off, TimeTrigger)
             push!(callbacks, make_timed_off_callback(eff))
+        elseif isa(eff.trigger_off, DurationTrigger)
+            push!(callbacks, make_duration_off_callback(eff))
         else
             error("Unknown trigger_off type: $(typeof(eff.trigger_off))")
         end

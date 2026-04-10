@@ -56,6 +56,72 @@ using DiffEqCallbacks: CallbackSet, PresetTimeCallback
     npi_double = Npi([eff_reactive, eff_reactive2])
     cbset_double = make_callbacks(npi_double)
     @test length(cbset_double.continuous_callbacks) == 4  # 2 on + 2 off
+
+    # Test make_callbacks with DurationTrigger off
+    duration_off = DurationTrigger(30.0)
+    eff_duration = ParamEffect(
+        :beta,
+        x -> x * 0.5,
+        x -> x / 0.5,
+        ReactiveTrigger(1:5, 1000.0),
+        duration_off
+    )
+
+    npi_duration = Npi([eff_duration])
+    cbset_duration = make_callbacks(npi_duration)
+    @test cbset_duration !== nothing
+    # Should have 2 continuous callbacks (reactive on, duration off)
+    @test length(cbset_duration.continuous_callbacks) == 2
+end
+
+@testset "Activation and Deactivation Time Tracking" begin
+    # Test that time_on and time_off are initialized for all effects
+    rt_on = ReactiveTrigger(1:5, 1000.0)
+    rt_off = ReactiveTrigger(1:5, 500.0, sum, :<)
+    eff = ParamEffect(
+        :beta,
+        x -> x * 0.5,
+        x -> x / 0.5,
+        rt_on,
+        rt_off
+    )
+
+    # Both should initialize as empty vectors
+    @test eff.time_on == Float64[]
+    @test eff.time_off == Float64[]
+
+    # Test time_on and time_off are independent
+    push!(eff.time_on, 10.0)
+    push!(eff.time_on, 20.0)
+    push!(eff.time_off, 15.0)
+    @test eff.time_on == [10.0, 20.0]
+    @test eff.time_off == [15.0]
+
+    # Test with timed triggers
+    tt_on = TimeTrigger(10.0)
+    tt_off = TimeTrigger(50.0)
+    eff_timed = ParamEffect(
+        :contact_rate,
+        x -> x * 0.7,
+        x -> x / 0.7,
+        tt_on,
+        tt_off
+    )
+
+    @test isempty(eff_timed.time_on)
+    @test isempty(eff_timed.time_off)
+
+    # Test with duration trigger
+    eff_duration = ParamEffect(
+        :sigma,
+        x -> x * 0.8,
+        x -> x / 0.8,
+        TimeTrigger(5.0),
+        DurationTrigger(20.0)
+    )
+
+    @test isempty(eff_duration.time_on)
+    @test isempty(eff_duration.time_off)
 end
 
 @testset "Callback Condition Functions" begin
