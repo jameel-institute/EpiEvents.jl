@@ -75,7 +75,7 @@ effect = ParamEffect(
     x -> x * 0.3,              # reduce beta to 30% (70% reduction)
     x -> x / 0.3,              # restoration function
     ReactiveTrigger(idx_I, 0.02 * N),    # activate when I > 2000
-    ReactiveTrigger(idx_I, 0.005 * N, sum, :<) # deactivate when I < 1000
+    DurationTrigger(30.0)                # deactivate in 30 days
 )
 
 npi = Npi([effect])
@@ -94,5 +94,5 @@ t = sol.t
 p = plot(t, I, label="Infected")
 xlabel!(p, "Time (days)")
 ylabel!(p, "Count")
-title!(p, "SIR Model with Reactive Intervention")
+title!(p, "Reactive effect with fixed duration")
 ```
