@@ -69,3 +69,32 @@ struct TimeTrigger <: Trigger
         return new(value)
     end
 end
+
+"""
+    DurationTrigger(value)
+
+A trigger that fires when an effect has been active for a specified duration.
+
+Only valid as `trigger_off` in a `ParamEffect`. Fires when
+`current_time - last(effect.time_on) >= value`.
+
+# Arguments
+- `value::Float64`: Duration (in model time units, typically days) after which to fire
+
+# Examples
+```julia
+# Deactivate 30 days after effect is switched on
+DurationTrigger(30.0)
+
+# Deactivate 7 days after activation
+DurationTrigger(7.0)
+```
+"""
+struct DurationTrigger <: Trigger
+    value::Float64
+
+    function DurationTrigger(value::Float64)
+        @assert value > 0 "duration must be positive"
+        return new(value)
+    end
+end

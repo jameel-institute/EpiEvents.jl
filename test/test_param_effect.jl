@@ -55,6 +55,39 @@ using EpiEvents
     @test eff.ison == true
     eff.ison = false
     @test eff.ison == false
+
+    # Test time_on field initialization
+    @test eff.time_on == Float64[]
+    @test isa(eff.time_on, Vector{Float64})
+
+    # Test time_off field initialization
+    @test eff.time_off == Float64[]
+    @test isa(eff.time_off, Vector{Float64})
+
+    # Test time_on with DurationTrigger
+    duration_off = DurationTrigger(30.0)
+    eff_duration = ParamEffect(
+        :beta,
+        x -> x * 0.6,
+        x -> x / 0.6,
+        ReactiveTrigger(1:5, 100.0),
+        duration_off
+    )
+    @test isa(eff_duration.trigger_off, DurationTrigger)
+    @test isempty(eff_duration.time_on)
+    @test isempty(eff_duration.time_off)
+
+    # Test that time_on is mutable
+    push!(eff_duration.time_on, 5.0)
+    @test eff_duration.time_on == [5.0]
+    push!(eff_duration.time_on, 10.0)
+    @test eff_duration.time_on == [5.0, 10.0]
+
+    # Test that time_off is mutable
+    push!(eff_duration.time_off, 35.0)
+    @test eff_duration.time_off == [35.0]
+    push!(eff_duration.time_off, 70.0)
+    @test eff_duration.time_off == [35.0, 70.0]
 end
 
 @testset "ParamEffect inverse function check" begin

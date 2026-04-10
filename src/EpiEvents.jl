@@ -48,7 +48,7 @@ include("ParamEffect.jl")
 include("Npi.jl")
 include("GenEvents.jl")
 
-export Trigger, ReactiveTrigger, TimeTrigger
+export Trigger, ReactiveTrigger, TimeTrigger, DurationTrigger
 export ParamEffect
 export Npi
 export make_callbacks

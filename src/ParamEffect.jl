@@ -10,6 +10,8 @@ A parameter modification effect that changes an ODE parameter based on trigger c
 - `trigger_on::Trigger`: Condition for activating the effect
 - `trigger_off::Trigger`: Condition for deactivating the effect
 - `ison::Bool`: Current state (mutable) tracking whether the effect is active
+- `time_on::Vector{Float64}`: Mutable vector of activation timestamps (append-only history)
+- `time_off::Vector{Float64}`: Mutable vector of deactivation timestamps (append-only history)
 
 # Constructor
 ```julia
@@ -54,6 +56,8 @@ mutable struct ParamEffect
     trigger_on::Trigger
     trigger_off::Trigger
     ison::Bool
+    time_on::Vector{Float64}
+    time_off::Vector{Float64}
 
     function ParamEffect(target::Symbol, func::Function, reset_func::Function,
             trigger_on::Trigger, trigger_off::Trigger)
@@ -68,6 +72,7 @@ mutable struct ParamEffect
                   "but got $restored (change function returned $transformed)."
         end
 
-        return new(target, func, reset_func, trigger_on, trigger_off, false)
+        return new(
+            target, func, reset_func, trigger_on, trigger_off, false, Float64[], Float64[])
     end
 end
