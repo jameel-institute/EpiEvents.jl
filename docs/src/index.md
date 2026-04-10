@@ -5,7 +5,7 @@ CurrentModule = EpiEvents
 # EpiEvents.jl
 
 [![License:MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.0.1-aquamarine.svg)](https://jameel-institute.github.io/EpiEvents.jl/dev/)
+[![Version](https://img.shields.io/badge/version-0.0.2-aquamarine.svg)](https://jameel-institute.github.io/EpiEvents.jl/dev/)
 [![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jameel-institute.github.io/EpiEvents.jl/dev/)
 [![Build Status](https://github.com/jameel-institute/EpiEvents.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jameel-institute/EpiEvents.jl/actions/workflows/CI.yml?query=branch%3Amain)

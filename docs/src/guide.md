@@ -8,9 +8,10 @@ This guide demonstrates how to use EpiEvents.jl to define parameter modification
 
 ## Core Concepts
 
-EpiEvents provides a modular framework for specifying how model parameters should change based on either:
+EpiEvents provides a modular framework for specifying how model parameters should change based on:
 - **Reactive triggers**: When epidemic state crosses a threshold (e.g., "when hospitalizations exceed 5000")
 - **Timed triggers**: At specific time points (e.g., "day 10 through day 50")
+- **Duration triggers**: After an effect has been active for a specified duration (e.g., "deactivate after 30 days")
 
 Each parameter modification is specified as a `ParamEffect` with:
 - A target parameter (e.g., `:beta` for transmission rate)
@@ -39,10 +40,9 @@ This implementation is intentionally flexible to allow users to build off of it.
 Each effect is expected to have both change and reset functions, which is reasonable for modelling perturbations to a system rather than permanent changes to the parameters.
 Pass a dummy function as the reset if you want to change a parameter permanently; there are no checks on whether a `ParamEffect` has an reset function that inverts the effect of the change function.
 
-!!! note "Depedence on dx"
+!!! warning "Depedence on dx"
 
-State-dependent effects currently only handle compartmental prevalence and not incidence.
-For an epi modelling context this means it is not currently possible to launch an Npi on new cases, only on a prevalence measure (such as hospital occupancy, deaths etc.).
+    State-dependent effects currently only handle compartmental prevalence and not incidence. For an epi modelling context this means it is not currently possible to launch an Npi on new cases, only on a prevalence measure (such as hospital occupancy, deaths etc.).
 
 ```@example basic_reactive
 using EpiEvents
@@ -112,6 +112,31 @@ effect_mixed = ParamEffect(
 npi = Npi([effect_mixed])
 callbacks = make_callbacks(npi)
 ```
+
+## Duration-based deactivation
+
+The `DurationTrigger` type deactivates an effect after it has been active for a specified duration.
+This is useful for time-limited interventions that respond to epidemic state.
+
+```@example duration_trigger
+using EpiEvents
+
+# Activate when hospitalizations spike,
+# but automatically stop after 30 days
+idx_H = 20:25
+effect_duration = ParamEffect(
+    :beta,
+    x -> x * 0.3,  # 70% reduction
+    x -> x / 0.3,
+    ReactiveTrigger(idx_H, 5000.0),         # activate when H >= 5000
+    DurationTrigger(30.0)                   # deactivate after 30 days
+)
+
+npi = Npi([effect_duration])
+callbacks = make_callbacks(npi)
+```
+
+The `DurationTrigger` tracks activation time in the effect's `time_on` field and fires when `current_time - last_activation >= duration`. This supports re-activation: if the effect turns off and then activates again, the duration timer resets.
 
 ## Combining effects
 
@@ -295,14 +320,25 @@ npi = Npi([
 
 ### Pattern: Time-limited emergency measures
 
-Apply strict intervention for bounded duration:
+Apply strict intervention for bounded duration. You can either stop at a fixed time (TimeTrigger):
 ```julia
 effect = ParamEffect(
     :beta,
     x -> x * 0.3,  # 70% reduction
     x -> x / 0.3,
     ReactiveTrigger(idx_cases, 50000.0),  # activate at crisis level
-    TimeTrigger(30.0)                      # hard stop after 30 days
+    TimeTrigger(30.0)                      # hard stop at day 30
+)
+```
+
+Or deactivate automatically after 30 days of being active (DurationTrigger):
+```julia
+effect = ParamEffect(
+    :beta,
+    x -> x * 0.3,
+    x -> x / 0.3,
+    ReactiveTrigger(idx_cases, 50000.0),  # activate at crisis level
+    DurationTrigger(30.0)                  # deactivate after 30 days active
 )
 ```
 
