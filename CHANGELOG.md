@@ -5,6 +5,9 @@
 ## [0.0.2] - 2026-04-27
 
 ### Added
+
+- `SIRParams`: Example parameter struct for the SIR model, with `beta` and `gamma` fields
+- `sir_model!`: Exported example compartmental model
 - `DurationTrigger`: New trigger type for deactivating effects based on elapsed time since activation
   - Fires when `current_time - last(activation_time) >= threshold`
   - Only valid as `trigger_off` to deactivate effects after specified duration
