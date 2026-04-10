@@ -47,10 +47,12 @@ include("Trigger.jl")
 include("ParamEffect.jl")
 include("Npi.jl")
 include("GenEvents.jl")
+include("ExampleModels.jl")
 
 export Trigger, ReactiveTrigger, TimeTrigger, DurationTrigger
 export ParamEffect
 export Npi
 export make_callbacks
+export SIRParams, sir_model!
 
 end
