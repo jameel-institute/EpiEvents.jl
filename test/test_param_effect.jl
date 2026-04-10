@@ -88,6 +88,37 @@ using EpiEvents
     @test eff_duration.time_off == [35.0]
     push!(eff_duration.time_off, 70.0)
     @test eff_duration.time_off == [35.0, 70.0]
+
+    # Test id field initialization and keyword argument
+    # Default: id should be nothing
+    @test eff.id === nothing
+
+    # With id specified
+    eff_with_id = ParamEffect(
+        :beta,
+        x -> x * 0.5,
+        x -> x / 0.5,
+        ReactiveTrigger(1:5, 1000.0),
+        ReactiveTrigger(1:5, 500.0, sum, :<);
+        id="intervention_1"
+    )
+    @test eff_with_id.id == "intervention_1"
+    @test isa(eff_with_id.id, String)
+
+    # id can be set to nothing explicitly
+    eff_no_id = ParamEffect(
+        :sigma,
+        x -> x * 0.9,
+        x -> x / 0.9,
+        TimeTrigger(20.0),
+        TimeTrigger(100.0);
+        id=nothing
+    )
+    @test eff_no_id.id === nothing
+
+    # Verify id is of correct type
+    @test isa(eff_with_id.id, Union{String, Nothing})
+    @test isa(eff.id, Union{String, Nothing})
 end
 
 @testset "ParamEffect inverse function check" begin

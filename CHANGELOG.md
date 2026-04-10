@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Added
+- `ParamEffect.id`: Optional string identifier field for labeling and distinguishing effects
+  - Exposed as keyword argument: `ParamEffect(...; id="label")`
+  - Defaults to `nothing` if not specified
+- `effect_durations`: Multi-dispatch utility function for querying effect activation durations
+  - 4 method signatures for both bare analysis and solution-aware analysis
+  - `effect_durations(eff::ParamEffect)` returns durations with `Inf` for open intervals
+  - `effect_durations(eff::ParamEffect, sol::AbstractODESolution)` calculates open intervals from final solution time
+  - `effect_durations(npi::Npi)` and `effect_durations(npi::Npi, sol::AbstractODESolution)` aggregate per-effect results
+  - Implemented in new module `EffectDurations.jl`
+
 ## [0.0.2] - 2026-04-27
 
 ### Added
