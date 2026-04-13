@@ -1,10 +1,14 @@
 name = "EpiEvents"
 uuid = "c8e4d7ef-117e-4f16-a674-8399d7a06a5b"
+version = "0.0.3"
 authors = ["Pratik Gupte <pratikgupte16@gmail.com> and contributors"]
-version = "0.0.2"
-
-[deps]
-DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
 
 [workspace]
 projects = ["test"]
+
+[deps]
+DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+
+[compat]
+SciMLBase = "2.154.0"

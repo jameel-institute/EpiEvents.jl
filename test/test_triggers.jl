@@ -62,3 +62,14 @@ end
     @test_throws AssertionError DurationTrigger(0.0)
     @test_throws AssertionError DurationTrigger(-5.0)
 end
+
+@testset "EmptyTrigger" begin
+    # Test basic construction
+    et = EmptyTrigger()
+    @test isa(et, EmptyTrigger)
+    @test isa(et, Trigger)
+
+    # EmptyTrigger is a singleton-like (no fields)
+    et2 = EmptyTrigger()
+    @test isa(et2, EmptyTrigger)
+end

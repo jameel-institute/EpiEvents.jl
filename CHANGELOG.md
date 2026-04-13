@@ -3,9 +3,16 @@
 ## [Unreleased]
 
 ### Added
+- `EmptyTrigger`: New sentinel trigger type for indefinite effects
+  - Never fires; allows effects to remain active indefinitely
+  - Default value for `trigger_off` in `ParamEffect`
 - `ParamEffect.id`: Optional string identifier field for labeling and distinguishing effects
   - Exposed as keyword argument: `ParamEffect(...; id="label")`
   - Defaults to `nothing` if not specified
+- Optional `trigger_off` parameter in `ParamEffect`
+  - `trigger_off` now defaults to `EmptyTrigger()`, making it optional in the constructor
+  - Effects can now activate and never deactivate automatically
+  - Example: `ParamEffect(:beta, f, r, trigger_on)` creates effect that stays on forever
 - `effect_durations`: Multi-dispatch utility function for querying effect activation durations
   - 4 method signatures for both bare analysis and solution-aware analysis
   - `effect_durations(eff::ParamEffect)` returns durations with `Inf` for open intervals

@@ -72,6 +72,37 @@ using DiffEqCallbacks: CallbackSet, PresetTimeCallback
     @test cbset_duration !== nothing
     # Should have 2 continuous callbacks (reactive on, duration off)
     @test length(cbset_duration.continuous_callbacks) == 2
+
+    # Test make_callbacks with EmptyTrigger off (indefinite effect)
+    eff_indefinite = ParamEffect(
+        :beta,
+        x -> x * 0.5,
+        x -> x / 0.5,
+        ReactiveTrigger(1:5, 1000.0)
+        # trigger_off defaults to EmptyTrigger() — effect never deactivates
+    )
+
+    npi_indefinite = Npi([eff_indefinite])
+    cbset_indefinite = make_callbacks(npi_indefinite)
+    @test cbset_indefinite !== nothing
+    # Should have 1 continuous callback (reactive on only, no off)
+    @test length(cbset_indefinite.continuous_callbacks) == 1
+
+    # Test mixed: one effect with on/off, one with indefinite
+    eff_timed = ParamEffect(
+        :contact_rate,
+        x -> x * 0.7,
+        x -> x / 0.7,
+        TimeTrigger(10.0),
+        TimeTrigger(50.0)
+    )
+
+    npi_mixed = Npi([eff_indefinite, eff_timed])
+    cbset_mixed = make_callbacks(npi_mixed)
+    @test cbset_mixed !== nothing
+    # Should have 1 continuous callback (from indefinite on) + 2 discrete callbacks (from timed)
+    @test length(cbset_mixed.continuous_callbacks) == 1
+    @test length(cbset_mixed.discrete_callbacks) == 2
 end
 
 @testset "Activation and Deactivation Time Tracking" begin
