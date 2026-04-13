@@ -64,3 +64,22 @@ xlabel!(p, "Time (days)")
 ylabel!(p, "Count")
 title!(p, "Reactive effect with fixed duration")
 ```
+
+## Querying Effect Durations
+
+Once the simulation completes, you can query how long each effect was active:
+
+```@example real_example
+# Get durations for a single effect (with solution context)
+effect_durations(effect, sol)
+# Returns: [duration_in_days]
+# If effect is still active at end of simulation, duration is calculated from sol.t[end]
+
+# Get durations for all effects in the NPI
+durations_all = effect_durations(npi, sol)
+# Returns: [[30.0]]  for this example (one effect, active for 30 days)
+
+# Without solution context (returns Inf for open intervals)
+effect_durations(effect)
+# Returns: [30.0]  if effect deactivated, [Inf] if still active
+```

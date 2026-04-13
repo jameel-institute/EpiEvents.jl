@@ -10,6 +10,8 @@ interventions, policy changes, etc.) that respond to either model time or epidem
 - `Trigger`: Abstract base for activation/deactivation conditions
   - `ReactiveTrigger`: Fires when model state crosses a threshold
   - `TimeTrigger`: Fires at specific time points
+  - `DurationTrigger`: Fires after effect has been active for specified duration
+  - `EmptyTrigger`: Sentinel trigger for indefinite effects (default for `trigger_off`)
 - `ParamEffect`: Specifies how to modify an ODE parameter and when
 - `Npi`: Container for collections of `ParamEffect`
 
@@ -50,7 +52,7 @@ include("GenEvents.jl")
 include("EffectDurations.jl")
 include("ExampleModels.jl")
 
-export Trigger, ReactiveTrigger, TimeTrigger, DurationTrigger
+export Trigger, ReactiveTrigger, TimeTrigger, DurationTrigger, EmptyTrigger
 export ParamEffect
 export Npi
 export make_callbacks
