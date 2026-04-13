@@ -233,6 +233,8 @@ function make_callbacks(npi::Npi)::CallbackSet
             push!(callbacks, make_timed_off_callback(eff))
         elseif isa(eff.trigger_off, DurationTrigger)
             push!(callbacks, make_duration_off_callback(eff))
+        elseif isa(eff.trigger_off, EmptyTrigger)
+            # No off-callback: effect never deactivates
         else
             error("Unknown trigger_off type: $(typeof(eff.trigger_off))")
         end

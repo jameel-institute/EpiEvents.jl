@@ -119,6 +119,40 @@ using EpiEvents
     # Verify id is of correct type
     @test isa(eff_with_id.id, Union{String, Nothing})
     @test isa(eff.id, Union{String, Nothing})
+
+    # Test optional trigger_off with EmptyTrigger default
+    eff_indefinite = ParamEffect(
+        :beta,
+        x -> x * 0.5,
+        x -> x / 0.5,
+        ReactiveTrigger(1:5, 1000.0)
+        # trigger_off defaults to EmptyTrigger()
+    )
+    @test isa(eff_indefinite.trigger_off, EmptyTrigger)
+    @test eff_indefinite.ison == false
+    @test isempty(eff_indefinite.time_on)
+    @test isempty(eff_indefinite.time_off)
+
+    # Test explicit EmptyTrigger
+    eff_explicit_empty = ParamEffect(
+        :sigma,
+        x -> x * 0.9,
+        x -> x / 0.9,
+        TimeTrigger(10.0),
+        EmptyTrigger()
+    )
+    @test isa(eff_explicit_empty.trigger_off, EmptyTrigger)
+
+    # Test with id and optional trigger_off
+    eff_with_id_indefinite = ParamEffect(
+        :contact_rate,
+        x -> x * 0.7,
+        x -> x / 0.7,
+        TimeTrigger(5.0);
+        id="permanent_reduction"
+    )
+    @test isa(eff_with_id_indefinite.trigger_off, EmptyTrigger)
+    @test eff_with_id_indefinite.id == "permanent_reduction"
 end
 
 @testset "ParamEffect inverse function check" begin

@@ -98,3 +98,35 @@ struct DurationTrigger <: Trigger
         return new(value)
     end
 end
+
+"""
+    EmptyTrigger()
+
+A sentinel trigger that never fires, allowing effects to remain active indefinitely.
+
+Used as the default `trigger_off` in `ParamEffect` to specify that an effect
+should not be automatically deactivated. Once activated, the effect continues
+for the duration of the simulation.
+
+# Examples
+```julia
+# Effect that activates at day 10 and never deactivates
+effect = ParamEffect(
+    :beta,
+    x -> x * 0.5,
+    x -> x / 0.5,
+    TimeTrigger(10.0),
+    EmptyTrigger()  # or just omit trigger_off for the default
+)
+
+# Equivalent (with default EmptyTrigger):
+effect = ParamEffect(
+    :beta,
+    x -> x * 0.5,
+    x -> x / 0.5,
+    TimeTrigger(10.0)
+)
+```
+"""
+struct EmptyTrigger <: Trigger
+end

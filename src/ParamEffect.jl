@@ -17,8 +17,12 @@ A parameter modification effect that changes an ODE parameter based on trigger c
 # Constructor
 ```julia
 ParamEffect(target::Symbol, func::Function, reset_func::Function,
-            trigger_on::Trigger, trigger_off::Trigger; id::Union{String, Nothing}=nothing)
+            trigger_on::Trigger, trigger_off::Trigger=EmptyTrigger();
+            id::Union{String, Nothing}=nothing)
 ```
+
+The `trigger_off` parameter is optional and defaults to `EmptyTrigger()`, which means the effect
+will never be deactivated once activated.
 
 # Examples
 ```julia
@@ -48,6 +52,15 @@ effect = ParamEffect(
     ReactiveTrigger(idx_cases, 1000.0),
     TimeTrigger(100.0)
 )
+
+# Indefinite effect: activate when cases rise, never deactivate (using default EmptyTrigger)
+effect = ParamEffect(
+    :beta,
+    x -> x * 0.4,
+    x -> x / 0.4,
+    ReactiveTrigger(idx_cases, 5000.0)
+    # trigger_off defaults to EmptyTrigger() — effect never deactivates
+)
 ```
 """
 mutable struct ParamEffect
@@ -62,7 +75,7 @@ mutable struct ParamEffect
     id::Union{String, Nothing}
 
     function ParamEffect(target::Symbol, func::Function, reset_func::Function,
-            trigger_on::Trigger, trigger_off::Trigger, id::Union{String, Nothing}=nothing)
+            trigger_on::Trigger, trigger_off::Trigger; id::Union{String, Nothing}=nothing)
         # Check if func and reset_func are inverses of each other
         test_value = 1.0
         transformed = func(test_value)
