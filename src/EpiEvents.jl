@@ -50,6 +50,7 @@ include("ParamEffect.jl")
 include("Npi.jl")
 include("GenEvents.jl")
 include("EffectDurations.jl")
+include("RealizedValues.jl")
 include("ExampleModels.jl")
 
 export Trigger, ReactiveTrigger, TimeTrigger, DurationTrigger, EmptyTrigger
@@ -57,6 +58,7 @@ export ParamEffect
 export Npi
 export make_callbacks
 export effect_durations
+export realized_values
 export SIRParams, sir_model!
 
 end

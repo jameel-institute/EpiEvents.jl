@@ -22,6 +22,19 @@
   - `effect_durations(eff::ParamEffect, sol::AbstractODESolution)` calculates open intervals from final solution time
   - `effect_durations(npi::Npi)` and `effect_durations(npi::Npi, sol::AbstractODESolution)` aggregate per-effect results
   - Implemented in new module `EffectDurations.jl`
+- `realized_values`: Utility function for recovering realized parameter values during simulation
+  - **Phase 1 - ParamEffect level**:
+    - `realized_values(eff::ParamEffect, original_value::Real, times::AbstractVector{Real})` computes parameter values at each time point accounting for effect activations
+    - Helper function `is_effect_active(eff::ParamEffect, time::Real)::Bool` determines effect state at specific times
+    - Handles multiple activation/deactivation cycles
+    - Supports effects with indefinite duration (EmptyTrigger)
+  - **Phase 2 - Npi aggregation level** (NEW):
+    - `realized_values(npi::Npi, params::AbstractDict, sol::AbstractODESolution)` computes all parameter values at each solution time point
+    - `realized_values(npi::Npi, params::NamedTuple, sol::AbstractODESolution)` convenience overload for NamedTuple parameters
+    - Groups multiple effects by target parameter
+    - Applies multiple effects in order of first activation time for correct composition
+    - Returns `Dict{Symbol, Vector{Float64}}` mapping parameter names to realized value timeseries
+  - Implemented in new module `RealizedValues.jl`
 
 ## [0.0.2] - 2026-04-27
 
