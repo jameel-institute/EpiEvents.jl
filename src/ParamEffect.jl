@@ -57,6 +57,17 @@ mutable struct ParamEffect
 
     function ParamEffect(target::Symbol, func::Function, reset_func::Function,
             trigger_on::Trigger, trigger_off::Trigger)
+        # Check if func and reset_func are inverses of each other
+        test_value = 1.0
+        transformed = func(test_value)
+        restored = reset_func(transformed)
+
+        if !isapprox(restored, test_value; rtol=1e-8, atol=1e-12)
+            @warn "The change function and reset function may not be inverses of each other. " *
+                  "Expected reset_func(func($test_value)) ≈ $test_value, " *
+                  "but got $restored (change function returned $transformed)."
+        end
+
         return new(target, func, reset_func, trigger_on, trigger_off, false)
     end
 end
