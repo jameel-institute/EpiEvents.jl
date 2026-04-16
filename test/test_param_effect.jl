@@ -56,3 +56,44 @@ using EpiEvents
     eff.ison = false
     @test eff.ison == false
 end
+
+@testset "ParamEffect inverse function check" begin
+    tt_on = TimeTrigger(10.0)
+    tt_off = TimeTrigger(50.0)
+
+    # Test: Valid inverse functions (should not warn)
+    @test_logs match_mode=:any ParamEffect(
+        :beta,
+        x -> x * 2.0,
+        x -> x / 2.0,
+        tt_on,
+        tt_off
+    )
+
+    # Test: Invalid inverse functions (should warn)
+    @test_logs (:warn,) ParamEffect(
+        :beta,
+        x -> x + 5.0,
+        x -> x - 3.0,  # Wrong reset function
+        tt_on,
+        tt_off
+    )
+
+    # Test: Exponential transformation (valid inverse)
+    @test_logs match_mode=:any ParamEffect(
+        :beta,
+        x -> exp(x),
+        x -> log(x),
+        tt_on,
+        tt_off
+    )
+
+    # Test: Non-inverse functions (should warn)
+    @test_logs (:warn,) ParamEffect(
+        :beta,
+        x -> x * 2.0,
+        x -> x,  # Wrong reset - should divide by 2
+        tt_on,
+        tt_off
+    )
+end
