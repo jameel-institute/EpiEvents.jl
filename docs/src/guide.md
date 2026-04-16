@@ -30,7 +30,7 @@ There are certain implicit assumptions:
 
 2. The model parameters should be contained in a type that supports indexing by symbol, such as a struct or a dict;
 
-3. The change and reset function should be reasonable, and ideally set and reset the value of the modified parameter;
+3. The modification and restoration functions should be reasonable, and ideally set and reset the value of the modified parameter;
 
 4. The state summary and comparison function should be reasonable.
 
@@ -54,7 +54,7 @@ idx_H = 20:25
 # Create the effect
 effect = ParamEffect(
     :beta,                                    # parameter to modify
-    x -> x * 0.4,                            # multiply by 0.4 (40% reduction)
+    x -> x * 0.4,                            # multiply by 0.4 (60% reduction)
     x -> x / 0.4,                            # divide by 0.4 (restoration)
     ReactiveTrigger(idx_H, 5000.0),          # activate: sum(H) >= 5000
     ReactiveTrigger(idx_H, 3000.0, sum, :<)  # deactivate: sum(H) < 3000
