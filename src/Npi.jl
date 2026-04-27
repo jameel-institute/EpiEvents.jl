@@ -5,9 +5,10 @@ A container for a collection of parameter effects representing a non-pharmaceuti
 
 An NPI can contain any mix of `ParamEffect`s with reactive triggers (state-dependent) or
 timed triggers (time-fixed), allowing flexible specification of complex interventions.
+An NPI must contain at least one effect.
 
 # Fields
-- `effects::Vector{ParamEffect}`: Collection of parameter modifications to apply
+- `effects::Vector{ParamEffect}`: Collection of parameter modifications to apply (non-empty)
 
 # Constructor
 ```julia
@@ -29,15 +30,15 @@ npi = Npi([
     ParamEffect(:contact_rate, x -> x * 0.7, x -> x / 0.7,
                 TimeTrigger(20.0), TimeTrigger(80.0))
 ])
-
-# Empty NPI (no interventions)
-npi = Npi(ParamEffect[])
 ```
 """
 mutable struct Npi
     effects::Vector{ParamEffect}
 
     function Npi(effects::AbstractVector{ParamEffect})
+        if isempty(effects)
+            throw(ArgumentError("Npi must contain at least one ParamEffect"))
+        end
         return new(Vector{ParamEffect}(effects))
     end
 end
