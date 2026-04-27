@@ -75,7 +75,7 @@ mutable struct ParamEffect
     id::Union{String, Nothing}
 
     function ParamEffect(target::Symbol, func::Function, reset_func::Function,
-            trigger_on::Trigger, trigger_off::Trigger; id::Union{String, Nothing}=nothing)
+            trigger_on::Trigger, trigger_off::Trigger = EmptyTrigger(); id::Union{String, Nothing}=nothing)
         # Check if func and reset_func are inverses of each other
         test_value = 1.0
         transformed = func(test_value)
