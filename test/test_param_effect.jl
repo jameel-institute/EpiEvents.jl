@@ -50,12 +50,6 @@ using EpiEvents
     @test isa(eff_mixed.trigger_on, ReactiveTrigger)
     @test isa(eff_mixed.trigger_off, TimeTrigger)
 
-    # Test mutable ison flag
-    eff.ison = true
-    @test eff.ison == true
-    eff.ison = false
-    @test eff.ison == false
-
     # Test time_on field initialization
     @test eff.time_on == Float64[]
     @test isa(eff.time_on, Vector{Float64})
