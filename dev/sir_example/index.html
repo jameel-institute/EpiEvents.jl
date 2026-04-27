@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>SIR Example · EpiEvents.jl</title><meta name="title" content="SIR Example · EpiEvents.jl"/><meta property="og:title" content="SIR Example · EpiEvents.jl"/><meta property="twitter:title" content="SIR Example · EpiEvents.jl"/><meta name="description" content="Documentation for EpiEvents.jl."/><meta property="og:description" content="Documentation for EpiEvents.jl."/><meta property="twitter:description" content="Documentation for EpiEvents.jl."/><meta property="og:url" content="https://jameel-institute.github.io/EpiEvents.jl/sir_example/"/><meta property="twitter:url" content="https://jameel-institute.github.io/EpiEvents.jl/sir_example/"/><link rel="canonical" href="https://jameel-institute.github.io/EpiEvents.jl/sir_example/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">EpiEvents.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../guide/">Usage Guide</a></li><li class="is-active"><a class="tocitem" href>SIR Example</a><ul class="internal"><li><a class="tocitem" href="#The-SIR-Model"><span>The SIR Model</span></a></li><li><a class="tocitem" href="#Adding-a-Public-Health-Intervention"><span>Adding a Public Health Intervention</span></a></li></ul></li><li><a class="tocitem" href="../pkg_index/">Index</a></li><li><a class="tocitem" href="../reference/">Function Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>SIR Example</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>SIR Example</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jameel-institute/EpiEvents.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jameel-institute/EpiEvents.jl/blob/main/docs/src/sir_example.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="SIR-Model-Example"><a class="docs-heading-anchor" href="#SIR-Model-Example">SIR Model Example</a><a id="SIR-Model-Example-1"></a><a class="docs-heading-anchor-permalink" href="#SIR-Model-Example" title="Permalink"></a></h1><p>This example demonstrates EpiEvents.jl with a simple compartmental SIR (Susceptible-Infected-Recovered) epidemic model.</p><h2 id="The-SIR-Model"><a class="docs-heading-anchor" href="#The-SIR-Model">The SIR Model</a><a id="The-SIR-Model-1"></a><a class="docs-heading-anchor-permalink" href="#The-SIR-Model" title="Permalink"></a></h2><p>We implement a basic SIR model with parameters that can be modified via interventions:</p><pre><code class="language-julia hljs">using OrdinaryDiffEq
+using EpiEvents
+using Plots
+
+# SIR model with modifiable parameters
+function sir_model!(du, u, p, t)
+    S, I, R = u
+    β, γ = p.beta, p.gamma
+
+    N = S + I + R
+
+    du[1] = -β * S * I / N          # dS/dt
+    du[2] = β * S * I / N - γ * I   # dI/dt
+    du[3] = γ * I                   # dR/dt
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">sir_model! (generic function with 1 method)</code></pre><p>The parameters are:</p><ul><li><code>β</code> (beta): transmission rate (contacts × probability per contact)</li><li><code>γ</code> (gamma): recovery rate (1/infectious period)</li></ul><p>The state vector is:</p><ul><li><code>u[1] = S</code>: susceptible individuals</li><li><code>u[2] = I</code>: infected individuals</li><li><code>u[3] = R</code>: recovered individuals</li></ul><h2 id="Adding-a-Public-Health-Intervention"><a class="docs-heading-anchor" href="#Adding-a-Public-Health-Intervention">Adding a Public Health Intervention</a><a id="Adding-a-Public-Health-Intervention-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-a-Public-Health-Intervention" title="Permalink"></a></h2><p>When infections spike, public health authorities typically respond by increasing social distancing, which reduces the transmission rate. We can model this with EpiEvents.</p><pre><code class="language-julia hljs"># Model parameters (mutable so they can be modified by callbacks)
+mutable struct SIRParams
+    beta::Float64     # transmission rate
+    gamma::Float64    # recovery rate
+end
+
+# Initial conditions
+N = 100_000  # population size
+I0 = 100     # initial infected
+S0 = N - I0
+R0 = 0
+
+u0 = [S0, I0, R0]
+
+# Parameters
+params = SIRParams(
+    1.3 / 7.0, 1.0 / 7.0
+)
+
+# Time span: 200 days
+tspan = (0.0, 200.0)
+
+# Define the ODE problem
+prob = ODEProblem(sir_model!, u0, tspan, params)
+
+# Create intervention: reduce beta when infections exceed 5% of population
+idx_I = 2  # state index for infected
+
+effect = ParamEffect(
+    :beta,
+    x -&gt; x * 0.3,              # reduce beta to 30% (70% reduction)
+    x -&gt; x / 0.3,              # restoration function
+    ReactiveTrigger(idx_I, 0.02 * N),    # activate when I &gt; 2000
+    ReactiveTrigger(idx_I, 0.005 * N, sum, :&lt;) # deactivate when I &lt; 1000
+)
+
+npi = Npi([effect])
+callbacks = make_callbacks(npi)
+
+# Solve with callbacks
+sol = solve(prob, Tsit5(), callback=callbacks, saveat=1.0);
+
+# Extract solution
+S = sol[1, :]
+I = sol[2, :]
+R = sol[3, :]
+t = sol.t
+
+# plot
+p = plot(t, I, label=&quot;Infected&quot;)
+xlabel!(p, &quot;Time (days)&quot;)
+ylabel!(p, &quot;Count&quot;)
+title!(p, &quot;SIR Model with Reactive Intervention&quot;)</code></pre><img src="09e1ed59.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../guide/">« Usage Guide</a><a class="docs-footer-nextpage" href="../pkg_index/">Index »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 27 April 2026 15:19">Monday 27 April 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
