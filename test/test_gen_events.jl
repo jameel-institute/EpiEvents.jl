@@ -3,11 +3,6 @@ using EpiEvents
 using DiffEqCallbacks: CallbackSet, PresetTimeCallback
 
 @testset "Callback Generation" begin
-    # Test make_callbacks with empty NPI
-    npi_empty = Npi(ParamEffect[])
-    cbset = make_callbacks(npi_empty)
-    @test cbset !== nothing
-
     # Test make_callbacks with single reactive effect
     rt_on = ReactiveTrigger(1:5, 1000.0)
     rt_off = ReactiveTrigger(1:5, 500.0, sum, :<)
@@ -77,15 +72,20 @@ end
     )
 
     # Test condition for >= comparison
-    # When state < threshold, condition should be negative
-    u_low = [10.0, 20.0, 30.0, 100.0, 200.0]
-    # sum([10, 20, 30]) = 60 < 100, so condition = 60 - 100 = -40
-    @test 60 - 100.0 < 0
+    cb_ge = EpiEvents.make_reactive_on_callback(eff_ge)
+    condition_ge = cb_ge.condition
 
-    # When state > threshold, condition should be positive
-    u_high = [50.0, 60.0, 70.0, 100.0, 200.0]
-    # sum([50, 60, 70]) = 180 > 100, so condition = 180 - 100 = 80
-    @test 180 - 100.0 > 0
+    # Test state at threshold: condition should return 0
+    u_at_threshold = [30.0, 40.0, 30.0, 40.0]  # sum(u[1:3]) = 100
+    @test condition_ge(u_at_threshold, nothing, nothing) ≈ 0.0
+
+    # Test state below threshold: condition should return negative
+    u_well_below = [20.0, 30.0, 25.0, 40.0]  # sum(u[1:3]) = 75, below threshold
+    @test condition_ge(u_well_below, nothing, nothing) < 0.0
+
+    # Test state above threshold: condition should return positive
+    u_above = [40.0, 40.0, 40.0, 40.0]  # sum(u[1:3]) = 120, above threshold
+    @test condition_ge(u_above, nothing, nothing) > 0.0
 
     # Test condition for < comparison
     rt_lt = ReactiveTrigger(1:3, 100.0, sum, :<)
@@ -97,13 +97,20 @@ end
         TimeTrigger(50.0)
     )
 
-    # When state > threshold, condition should be negative
-    # condition = value - state = 100 - 180 = -80
-    @test 100.0 - 180 < 0
+    cb_lt = EpiEvents.make_reactive_on_callback(eff_lt)
+    condition_lt = cb_lt.condition
 
-    # When state < threshold, condition should be positive
-    # condition = value - state = 100 - 60 = 40
-    @test 100.0 - 60 > 0
+    # Test state at threshold: condition should return 0
+    u_at_threshold = [30.0, 40.0, 30.0, 40.0]  # sum(u[1:3]) = 100
+    @test condition_lt(u_at_threshold, nothing, nothing) ≈ 0.0
+
+    # Test state below threshold: condition should return positive
+    u_well_below = [20.0, 30.0, 25.0, 40.0]  # sum(u[1:3]) = 75, below threshold
+    @test condition_lt(u_well_below, nothing, nothing) > 0.0
+
+    # Test state above threshold: condition should return negative
+    u_above = [40.0, 40.0, 40.0, 40.0]  # sum(u[1:3]) = 120, above threshold
+    @test condition_lt(u_above, nothing, nothing) < 0.0
 end
 
 @testset "Dict and Struct Parameter Access" begin

@@ -29,9 +29,8 @@ using EpiEvents
     @test npi_multi.effects[1] == eff1
     @test npi_multi.effects[2] == eff2
 
-    # Test with empty effects list
-    npi_empty = Npi(ParamEffect[])
-    @test length(npi_empty.effects) == 0
+    # Test that empty effects list throws error
+    @test_throws ArgumentError Npi(ParamEffect[])
 
     # Test that effects vector is mutable
     eff3 = ParamEffect(

@@ -62,7 +62,7 @@ mutable struct ParamEffect
         transformed = func(test_value)
         restored = reset_func(transformed)
 
-        if !isapprox(restored, test_value; rtol=1e-8, atol=1e-12)
+        if !isapprox(restored, test_value; rtol = 1e-8, atol = 1e-12)
             @warn "The change function and reset function may not be inverses of each other. " *
                   "Expected reset_func(func($test_value)) ≈ $test_value, " *
                   "but got $restored (change function returned $transformed)."
