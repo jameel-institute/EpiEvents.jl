@@ -2,7 +2,10 @@
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-04-27
+
 ### Added
+
 - `EmptyTrigger`: New sentinel trigger type for indefinite effects
   - Never fires; allows effects to remain active indefinitely
   - Default value for `trigger_off` in `ParamEffect`
