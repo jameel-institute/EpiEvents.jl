@@ -9,11 +9,13 @@ This guide demonstrates how to use EpiEvents.jl to define parameter modification
 ## Core Concepts
 
 EpiEvents provides a modular framework for specifying how model parameters should change based on:
+
 - **Reactive triggers**: When epidemic state crosses a threshold (e.g., "when hospitalizations exceed 5000")
 - **Timed triggers**: At specific time points (e.g., "day 10 through day 50")
 - **Duration triggers**: After an effect has been active for a specified duration (e.g., "deactivate after 30 days")
 
 Each parameter modification is specified as a `ParamEffect` with:
+
 - A target parameter (e.g., `:beta` for transmission rate)
 - A modification function (e.g., "multiply by 0.4" to reduce contact)
 - A restoration function (e.g., "divide by 0.4" to restore)
@@ -38,11 +40,15 @@ There are certain implicit assumptions:
 This implementation is intentionally flexible to allow users to build off of it.
 
 Each effect is expected to have both change and reset functions, which is reasonable for modelling perturbations to a system rather than permanent changes to the parameters.
-Pass a dummy function as the reset if you want to change a parameter permanently; there are no checks on whether a `ParamEffect` has an reset function that inverts the effect of the change function.
+Pass a dummy function as the reset if you want to change a parameter permanently.
 
-!!! warning "Depedence on dx"
+!!! note "Inverse check"
 
-    State-dependent effects currently only handle compartmental prevalence and not incidence. For an epi modelling context this means it is not currently possible to launch an Npi on new cases, only on a prevalence measure (such as hospital occupancy, deaths etc.).
+    The `ParamEffect` constructor tests whether `reset_func(func(1.0)) ≈ 1.0` and issues a `@warn` if not. This is a sanity check, not an error — the effect will still be created.
+
+!!! warning "Dependence on state prevalence"
+
+    State-dependent effects monitor compartmental prevalence (the state vector `u`) and not incidence (rates of change `du`). It is not currently possible to trigger an effect on new cases; only on a prevalence measure such as hospital occupancy or cumulative deaths.
 
 ```@example basic_reactive
 using EpiEvents
@@ -136,7 +142,33 @@ npi = Npi([effect_duration])
 callbacks = make_callbacks(npi)
 ```
 
-The `DurationTrigger` tracks activation time in the effect's `time_on` field and fires when `current_time - last_activation >= duration`. This supports re-activation: if the effect turns off and then activates again, the duration timer resets.
+The `DurationTrigger` tracks activation time in the effect's `time_on` field and fires when `current_time - last_activation >= duration`.
+This supports re-activation: if the effect turns off and then activates again, the duration timer resets.
+
+## Indefinite effects
+
+An effect that activates but never deactivates can be specified by omitting `trigger_off` (it defaults to `EmptyTrigger()`).
+This is useful for modelling permanent or open-ended policy changes.
+
+```@example indefinite
+using EpiEvents
+
+idx_I = 2
+
+# Activate when cases exceed 5000; effect never turns off
+effect_indef = ParamEffect(
+    :beta,
+    x -> x * 0.5,
+    x -> x / 0.5,
+    ReactiveTrigger(idx_I, 5000.0)
+    # trigger_off defaults to EmptyTrigger() — no off-callback is registered
+)
+
+npi = Npi([effect_indef])
+callbacks = make_callbacks(npi)
+```
+
+`EmptyTrigger` can also be passed explicitly: `ParamEffect(..., trigger_on, EmptyTrigger())`.
 
 ## Combining effects
 
@@ -283,63 +315,94 @@ sol = solve(ensembleprob, Tsit5(), callback=cbset, trajectories=10)
 
 ## Common Patterns
 
-### Pattern: Gradual Intervention
+### Pattern: Reactive intervention with hysteresis
 
-Apply intervention proportional to state level:
+Set different on and off thresholds to prevent rapid toggling when the state fluctuates near the boundary.
 
-```julia
-# When cases exceed threshold, reduce beta by a factor
-# Proportional reduction could be implemented as:
+```@example pattern_hysteresis
+using EpiEvents
+
+# Hospitalizations: on at 500, off at 200 — a 300-unit gap prevents oscillation
+idx_H = 4  # index of hospitalized compartment
+
 effect = ParamEffect(
     :beta,
-    x -> x * 0.5,  # fixed reduction (you control the amount)
+    x -> x * 0.5,
     x -> x / 0.5,
-    ReactiveTrigger(idx_cases, 5000.0),
-    ReactiveTrigger(idx_cases, 1000.0, sum, :<)
+    ReactiveTrigger(idx_H, 500.0),          # activate when H >= 500
+    ReactiveTrigger(idx_H, 200.0, sum, :<)  # deactivate when H < 200
 )
+
+npi = Npi([effect])
+callbacks = make_callbacks(npi)
 ```
 
-### Pattern: Sequential interventions
+### Pattern: Staged response on distinct parameters
 
-Stage interventions with different triggers:
+Effects that target different parameters can safely overlap — each `func`/`reset_func` pair operates on its own parameter and does not interfere with the other.
 
-```julia
-# note code not run
-npi = Npi([
-    # Stage 1: mild measures when cases start rising
-    ParamEffect(:beta, x -> x * 0.8, x -> x / 0.8,
-                ReactiveTrigger(idx_cases, 1000.0),
-                ReactiveTrigger(idx_cases, 500.0, sum, :<)),
-    
-    # Stage 2: stricter measures when hospitalizations spike
-    ParamEffect(:beta, x -> x * 0.5, x -> x / 0.5,
-                ReactiveTrigger(idx_H, 5000.0),
-                ReactiveTrigger(idx_H, 2000.0, sum, :<)),
-])
+!!! warning "Stacking effects on the same parameter"
+
+    If two `ParamEffect`s share the same `target` and can be active simultaneously, their `func` and `reset_func` calls compose. For example, if effect A reduces `:beta` to `0.8x` and effect B then reduces it to `0.5x`, effect B's `reset_func` will divide `0.4x` (the already-reduced value) by `0.5`, yielding `0.8x`, and not the original.
+
+```@example pattern_staged
+using EpiEvents
+
+# State indices
+idx_I = 2  # infected
+idx_H = 3  # hospitalised
+
+effects = [
+    # Stage 1: reduce transmission when infections rise
+    ParamEffect(
+        :beta,
+        x -> x * 0.7,
+        x -> x / 0.7,
+        ReactiveTrigger(idx_I, 5000.0),         # on when I >= 5000
+        ReactiveTrigger(idx_I, 2000.0, sum, :<) # off when I < 2000
+    ),
+    # Stage 2: accelerate recovery (e.g. surge treatment) when hospitals fill
+    ParamEffect(
+        :gamma,
+        x -> x * 1.5,
+        x -> x / 1.5,
+        ReactiveTrigger(idx_H, 500.0),          # on when H >= 500
+        ReactiveTrigger(idx_H, 150.0, sum, :<)  # off when H < 150
+    )
+]
+
+npi = Npi(effects)
+callbacks = make_callbacks(npi)
 ```
 
-### Pattern: Time-limited emergency measures
+### Pattern: Scheduled campaign
 
-Apply strict intervention for bounded duration. You can either stop at a fixed time (TimeTrigger):
-```julia
-effect = ParamEffect(
+Use `TimeTrigger` for a policy that starts and ends at fixed calendar times (e.g. a school-closure order), and `DurationTrigger` when the end time should be measured from when the policy was triggered rather than from the start of the simulation.
+
+```@example pattern_scheduled
+using EpiEvents
+
+# School closure from day 14 to day 42 (four weeks)
+effect_timed = ParamEffect(
     :beta,
-    x -> x * 0.3,  # 70% reduction
-    x -> x / 0.3,
-    ReactiveTrigger(idx_cases, 50000.0),  # activate at crisis level
-    TimeTrigger(30.0)                      # hard stop at day 30
+    x -> x * 0.6,
+    x -> x / 0.6,
+    TimeTrigger(14.0),
+    TimeTrigger(42.0)
 )
-```
 
-Or deactivate automatically after 30 days of being active (DurationTrigger):
-```julia
-effect = ParamEffect(
+# Emergency decree: activate when deaths spike, automatically lifts after 21 days
+idx_D = 4
+effect_decree = ParamEffect(
     :beta,
-    x -> x * 0.3,
-    x -> x / 0.3,
-    ReactiveTrigger(idx_cases, 50000.0),  # activate at crisis level
-    DurationTrigger(30.0)                  # deactivate after 30 days active
+    x -> x * 0.4,
+    x -> x / 0.4,
+    ReactiveTrigger(idx_D, 100.0),
+    DurationTrigger(21.0)
 )
+
+npi = Npi([effect_timed, effect_decree])
+callbacks = make_callbacks(npi)
 ```
 
 ## Parameter access
