@@ -74,12 +74,12 @@ using DiffEqCallbacks: CallbackSet, PresetTimeCallback
     @test length(cbset_duration.continuous_callbacks) == 2
 
     # Test make_callbacks with EmptyTrigger off (indefinite effect)
+            # trigger_off defaults to EmptyTrigger() — effect never deactivates
     eff_indefinite = ParamEffect(
         :beta,
         x -> x * 0.5,
         x -> x / 0.5,
         ReactiveTrigger(1:5, 1000.0)
-        # trigger_off defaults to EmptyTrigger() — effect never deactivates
     )
 
     npi_indefinite = Npi([eff_indefinite])
@@ -281,7 +281,6 @@ end
         TimeTrigger(100.0)
     )
     push!(eff_open.time_on, 10.0)
-    push!(eff_open.time_off)  # empty, effect is active
     @test effect_durations(eff_open) == [Inf]
 
     # Test with solution context (typed AbstractODESolution)
