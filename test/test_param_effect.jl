@@ -94,7 +94,7 @@ using EpiEvents
         x -> x / 0.5,
         ReactiveTrigger(1:5, 1000.0),
         ReactiveTrigger(1:5, 500.0, sum, :<);
-        id="intervention_1"
+        id = "intervention_1"
     )
     @test eff_with_id.id == "intervention_1"
     @test isa(eff_with_id.id, String)
@@ -106,7 +106,7 @@ using EpiEvents
         x -> x / 0.9,
         TimeTrigger(20.0),
         TimeTrigger(100.0);
-        id=nothing
+        id = nothing
     )
     @test eff_no_id.id === nothing
 
@@ -119,8 +119,7 @@ using EpiEvents
         :beta,
         x -> x * 0.5,
         x -> x / 0.5,
-        ReactiveTrigger(1:5, 1000.0)
-        # trigger_off defaults to EmptyTrigger()
+        ReactiveTrigger(1:5, 1000.0)        # trigger_off defaults to EmptyTrigger()
     )
     @test isa(eff_indefinite.trigger_off, EmptyTrigger)
     @test eff_indefinite.ison == false
@@ -143,7 +142,7 @@ using EpiEvents
         x -> x * 0.7,
         x -> x / 0.7,
         TimeTrigger(5.0);
-        id="permanent_reduction"
+        id = "permanent_reduction"
     )
     @test isa(eff_with_id_indefinite.trigger_off, EmptyTrigger)
     @test eff_with_id_indefinite.id == "permanent_reduction"
