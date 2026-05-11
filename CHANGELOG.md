@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.0.3] - 2026-04-27
+## [0.0.3] - 2026-05-11
 
 ### Added
 
@@ -22,6 +22,7 @@
   - `effect_durations(eff::ParamEffect, sol::AbstractODESolution)` calculates open intervals from final solution time
   - `effect_durations(npi::Npi)` and `effect_durations(npi::Npi, sol::AbstractODESolution)` aggregate per-effect results
   - Implemented in new module `EffectDurations.jl`
+- Update `guide.md` to expand on use cases.
 
 ## [0.0.2] - 2026-04-27
 

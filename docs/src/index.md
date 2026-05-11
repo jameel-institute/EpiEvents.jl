@@ -27,11 +27,31 @@ Pkg.add(url="git@github.com:jameel-institute/EpiEvents.jl.git")
 
 ## Quick start
 
-WIP
+```julia
+using OrdinaryDiffEq, EpiEvents
 
-## Related projects
+# SIR model with a reactive intervention
+params = SIRParams(1.3 / 7.0, 1.0 / 7.0)
+u0 = [99_900.0, 100.0, 0.0]
+prob = ODEProblem(sir_model!, u0, (0.0, 200.0), params)
 
-WIP
+# Reduce beta by 70% when infected (u[2]) exceeds 2000; lift after 30 days
+effect = ParamEffect(
+    :beta,
+    x -> x * 0.3,
+    x -> x / 0.3,
+    ReactiveTrigger(2, 2000.0),
+    DurationTrigger(30.0)
+)
+
+sol = solve(prob, Tsit5(), callback=make_callbacks(Npi([effect])))
+```
+
+## Related packages
+
+- [Daedalus.jl](https://github.com/jameel-institute/Daedalus.jl): Integrated epidemic-economic model where events functionality was initially implemented, and which has been distilled into _EpiEvents.jl_.
+- [DifferentialEquations.jl](https://github.com/SciML/DifferentialEquations.jl): ODE solver suite used to run epidemic models.
+- [DiffEqCallbacks.jl](https://github.com/SciML/DiffEqCallbacks.jl): Callback primitives (`ContinuousCallback`, `PresetTimeCallback`, `CallbackSet`) wrapped by _EpiEvents.jl_.
 
 ## Help
 
