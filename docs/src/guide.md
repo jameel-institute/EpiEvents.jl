@@ -42,13 +42,15 @@ This implementation is intentionally flexible to allow users to build off of it.
 Each effect is expected to have both change and reset functions, which is reasonable for modelling perturbations to a system rather than permanent changes to the parameters.
 Pass a dummy function as the reset if you want to change a parameter permanently.
 
+
 !!! note "Inverse check"
 
     The `ParamEffect` constructor tests whether `reset_func(func(1.0)) ≈ 1.0` and issues a `@warn` if not. This is a sanity check, not an error — the effect will still be created.
 
-!!! warning "Dependence on state prevalence"
+!!! warning "Depedence on incidence measures"
 
     State-dependent effects monitor compartmental prevalence (the state vector `u`) and not incidence (rates of change `du`). It is not currently possible to trigger an effect on new cases; only on a prevalence measure such as hospital occupancy or cumulative deaths.
+
 
 ```@example basic_reactive
 using EpiEvents
